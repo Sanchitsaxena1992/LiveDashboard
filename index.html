@@ -123,6 +123,11 @@
     .dropdown-grid { grid-template-columns: 1fr; }
     .wrap{padding: 32px 16px 72px;}
   }
+  .modal{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);}
+.modal-content{background:#fff;width:90%;max-width:1200px;margin:40px auto;padding:20px;border-radius:12px;max-height:80vh;overflow:auto;}
+.close-btn{float:right;cursor:pointer;font-size:28px;font-weight:bold;}
+.detail-table{width:100%;border-collapse:collapse;}
+.detail-table th,.detail-table td{border:1px solid #E1E6EB;padding:8px;}
 </style>
 </head>
 <body>
@@ -185,7 +190,13 @@
   </div>
 
 </div>
-
+<div id="detailModal" class="modal">
+<div class="modal-content">
+<span class="close-btn" onclick="closeModal()">&times;</span>
+<h3 id="detailTitle">Message Details</h3>
+<div id="detailContent"></div>
+</div>
+</div>
 <script>
 /* ============================================================
    EMBEDDED CORRIDOR DATASET (mirrors dataset.json)
@@ -417,7 +428,7 @@ function updateDashboardMetrics() {
            sel.originSystems.has(r.originSys || '-') &&
            sel.destSystems.has(r.destSys || '-');
   });
-
+  currentFilteredRecords = filtered;
   document.getElementById('graphCounterSub').textContent = `${filtered.length} logs successfully evaluated within selected filter scope.`;
 
   updateBadgeCounts(filtered);
@@ -511,6 +522,11 @@ function drawClusteredChart(labels, receivedMap, transmittedMap) {
       responsive: true,
       maintainAspectRatio: false,
       animation: { duration: 300, easing: 'easeOutQuart' },
+	  onClick: function(event, elements){
+if(!elements.length) return;
+const el = elements[0];
+showDetails(this.data.labels[el.index], this.data.datasets[el.datasetIndex].label);
+},
       plugins: {
         legend: { 
           display: true, 
@@ -599,7 +615,23 @@ function activateData(rows) {
   initDashboard();
   document.querySelector('.wrap').classList.add('data-ready');
 }
-
+function showDetails(messageType,statusLabel){
+ const rows=currentFilteredRecords.filter(r=>
+ r.type.toUpperCase()===messageType &&
+ r.status.toLowerCase()===statusLabel.toLowerCase()
+ );
+ let html=`<table class="detail-table"><thead><tr><th>Origin Port</th><th>Destination Port</th><th>Origin System</th><th>Destination System</th><th>Status</th></tr></thead><tbody>`;
+ rows.forEach(r=>{
+ html+=`<tr><td>${r.originPort||'-'}</td><td>${r.destPort||'-'}</td><td>${r.originSys||'-'}</td><td>${r.destSys||'-'}</td><td>${r.status||'-'}</td></tr>`;
+ });
+ html+='</tbody></table>';
+ document.getElementById('detailTitle').innerHTML=`${messageType} - ${statusLabel} (${rows.length})`;
+ document.getElementById('detailContent').innerHTML=html;
+ document.getElementById('detailModal').style.display='block';
+}
+function closeModal(){
+ document.getElementById('detailModal').style.display='none';
+}
 fetch('dataset.json')
   .then(res => { if(!res.ok) throw new Error(); return res.json(); })
   .then(rows => activateData(rows))
