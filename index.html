@@ -205,6 +205,42 @@ const MONTH_ORDER = ["January","February","March","April","May","June","July","A
 let sel = { years: new Set(), months: new Set(), types: new Set(), originPorts: new Set(), destPorts: new Set(), originSystems: new Set(), destSystems: new Set() };
 let globalChartInstance = null;
 
+
+/* ============================================================
+   MASTER FILTER VALUES (Always Visible)
+   ============================================================ */
+const MASTER_PORTS = [
+  'JNPA',
+  'Kandla',
+  'Khalifa',
+  'Jebel Ali',
+  'Port Fujairah',
+  'Mundra'
+];
+
+const MASTER_SYSTEMS = [
+  'MAITRI',
+  'NLP-M',
+  'CCS',
+  'KICT',
+  'BMCT',
+  'PSA',
+  'AD Ports',
+  'Dubai Trade',
+  'ICEGATE'
+];
+
+const MASTER_MESSAGE_TYPES = [
+  'BAPLIE',
+  'CODECO',
+  'COARRI',
+  'VESPRO',
+  'VESDEP',
+  'ETAETD',
+  'OTHER'
+];
+
+
 function toggleDropdown(id) {
   const el = document.getElementById(id);
   const isOpen = el.classList.contains('open');
@@ -222,13 +258,48 @@ document.addEventListener('click', (e) => {
    INITIALIZATION LAYOUT PIPELINE
    ============================================================ */
 function initDashboard() {
-  const dYears = Array.from(new Set(masterRecords.map(r => r.year))).sort();
-  const dMonths = Array.from(new Set(masterRecords.map(r => r.month))).sort((a,b)=>MONTH_ORDER.indexOf(a)-MONTH_ORDER.indexOf(b));
-  const dTypes = Array.from(new Set(masterRecords.map(r => r.type.toUpperCase()))).sort();
-  const dOrigPorts = Array.from(new Set(masterRecords.map(r => r.originPort || '-'))).sort();
-  const dDestPorts = Array.from(new Set(masterRecords.map(r => r.destPort || '-'))).sort();
-  const dOrigSys = Array.from(new Set(masterRecords.map(r => r.originSys || '-'))).sort();
-  const dDestSys = Array.from(new Set(masterRecords.map(r => r.destSys || '-'))).sort();
+  const dYears = Array.from(
+    new Set(masterRecords.map(r => r.year))
+  ).sort();
+
+  const dMonths = Array.from(
+    new Set(masterRecords.map(r => r.month))
+  ).sort((a,b)=>MONTH_ORDER.indexOf(a)-MONTH_ORDER.indexOf(b));
+
+  const dTypes = Array.from(
+    new Set([
+      ...MASTER_MESSAGE_TYPES,
+      ...masterRecords.map(r => r.type.toUpperCase())
+    ])
+  ).sort();
+
+  const dOrigPorts = Array.from(
+    new Set([
+      ...MASTER_PORTS,
+      ...masterRecords.map(r => r.originPort || '-')
+    ])
+  ).sort();
+
+  const dDestPorts = Array.from(
+    new Set([
+      ...MASTER_PORTS,
+      ...masterRecords.map(r => r.destPort || '-')
+    ])
+  ).sort();
+
+  const dOrigSys = Array.from(
+    new Set([
+      ...MASTER_SYSTEMS,
+      ...masterRecords.map(r => r.originSys || '-')
+    ])
+  ).sort();
+
+  const dDestSys = Array.from(
+    new Set([
+      ...MASTER_SYSTEMS,
+      ...masterRecords.map(r => r.destSys || '-')
+    ])
+  ).sort();
 
   sel.years = new Set(dYears);
   sel.months = new Set(dMonths);
